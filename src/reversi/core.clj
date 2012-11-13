@@ -54,3 +54,18 @@
           nil            nil   ; reached the end without finding
           )))))                ; a piece of the players color
 
+(defn move [board player pos]
+  (if (or (board pos) ; the position is already occupied
+          (= (neighbours pos) 0))
+    nil
+    (let [directions (map #(pos- % pos) (neighbours pos))]
+
+      )
+    ))
+
+(defn moves
+  "returns all possible moves for the given player and board"
+  [board player]
+  (for [y (range *board-size*)
+        x (range *board-size*)]
+    ))
