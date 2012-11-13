@@ -18,3 +18,19 @@
       (when (= x 7)
         (println)
         (println line)))))
+
+;; (def pos- (partial mapv -))
+(defn pos- [[a b] [c d]] [(- a c) (- b d)])
+;;(def pos+ (partial mapv +))
+(defn pos+ [[a b] [c d]] [(+ a c) (+ b d)])
+
+(defn neighbours
+  "returns all occupied positions from [x-1 y-1] to [x+1 y+1]"
+  [board [x y]]
+  (for [a (range (dec x) (+ x 2))
+        b (range (dec y) (+ y 2))
+        :when (board [a b])]
+    [a b]))
+
+(def opponent {\w \b, \b \w})
+
