@@ -9,10 +9,13 @@
             [3 4] \w [4 4] \b})
 
 (defn print-board [board]
-  (let [line (apply str (repeat (* 2 *board-size*) \-))]
+  (let [line (apply str "--" (repeat (* 2 *board-size*) \-))
+        numbers (apply str " |" (interpose \| (range *board-size*)))]
+    (println numbers)
     (println line)
     (doseq [y (range *board-size*)
             x (range *board-size*)]
+      (when (zero? x) (print (str y \|)))
       (print (or (board [x y]) \space))
       (print \|)
       (when (= x 7)
