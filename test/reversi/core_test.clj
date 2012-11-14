@@ -2,6 +2,11 @@
   (:use clojure.test
         reversi.core))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+(def test-board {[3 3] \b [4 3] \w
+                 [3 4] \w [4 4] \b})
+
+(deftest flip-test
+  (is (= (assoc test-board [2 3] \w [3 3] \w))
+      (flip test-board [2 3] \w [1 0]))
+  (is (= (assoc test-board [3 5] \b [3 4] \b))
+      (flip test-board [3 5] \b [0 1])))
