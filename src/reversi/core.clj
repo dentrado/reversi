@@ -36,23 +36,17 @@
 
 (defn flip
   "Tries to flip pieces from (not including) pos in the given direction until
-   a piece of the players color appears.
-   dir is on the form [x y], for example [1 0] means east, [0 1] south,
-   [-1 1] southwest etc.
-   Returns nil if no pieces can be flipped."
+   a piece of the players color appears. dir is on the form [x y],
+   i.e. [1 0] means east, [0 1] south, [-1 1] southwest and so on.
+   Returns the set of flipped pieces (empty set if no pieces can be flipped)."
   [board pos player dir]
-  (let [opponent-color (opponent player)
-        piece (pos+ pos dir)]
-    (if (= (board piece) player)
-      nil          ; the first piece we tried to flip was the same color
-      (loop [board board
-             piece piece]
-        (condp = (board piece)
-          opponent-color (recur (assoc board opponent-color)
-                                (pos+ piece dir))
-          player         board
-          nil            nil   ; reached the end without finding
-          )))))                ; a piece of the players color
+  (loop [piece   (pos+ pos dir)
+         flipped #{}]
+    (condp = (board piece)
+      (opponent player) (recur (pos+ piece dir) (conj flipped piece))
+      player            flipped
+      nil               #{})))   ; reached the end without finding
+                                 ; a piece of the players color
 
 (defn move [board player pos]
   (if (or (board pos) ; the position is already occupied
