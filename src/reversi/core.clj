@@ -1,7 +1,10 @@
-(ns reversi.core)
+(ns reversi.core
+  (:use [clojure.set :only [union]]))
 
 ;; TODO: tree, minimax, alphabeta, heuristics
 ;; tree: legal moves: inside bounds, and flips at least a piece
+
+(defmacro dbg[x] `(let [x# ~x] (println "dbg:" '~x "=" x#) x#))
 
 (def *board-size* 8)
 
@@ -41,28 +44,30 @@
   "Tries to flip pieces from (not including) pos in the given direction until
    a piece of the players color appears. dir is on the form [x y],
    i.e. [1 0] means east, [0 1] south, [-1 1] southwest and so on.
-   Returns the set of flipped pieces (empty set if no pieces can be flipped)."
+   Returns the set of flipped pieces (nil if no pieces can be flipped)."
   [board pos player dir]
   (loop [piece   (pos+ pos dir)
-         flipped #{}]
+         flipped-pieces #{}]
     (condp = (board piece)
-      (opponent player) (recur (pos+ piece dir) (conj flipped piece))
-      player            flipped
+      (opponent player) (recur (pos+ piece dir) (conj flipped-pieces piece))
+      player            flipped-pieces
       nil               #{})))   ; reached the end without finding
                                  ; a piece of the players color
 
 (defn move [board player pos]
-  (if (or (board pos) ; the position is already occupied
-          (= (neighbours pos) 0))
+  (if (board pos) ; the position is already occupied
     nil
-    (let [directions (map #(pos- % pos) (neighbours pos))]
-
-      )
-    ))
+    (let [directions (map #(pos- % pos) (neighbours board pos))
+          flipped-pieces (apply union (map #(flip board pos player %)
+                                           directions))]
+      (if (empty? flipped-pieces)
+        nil
+        (merge (assoc board pos player)
+               (zipmap flipped-pieces (repeat player)))))))
 
 (defn moves
   "returns all possible moves for the given player and board"
   [board player]
   (for [y (range *board-size*)
         x (range *board-size*)]
-    ))
+    [x y]))
