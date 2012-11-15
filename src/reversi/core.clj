@@ -75,11 +75,20 @@
     [mv (opponent player)]))
 
 (defn iter-tree
-  "doc-string"
+  "Like iterate but returns a (lazy) tree instead of a seq.
+   (f a) should return a collection. Each node in the tree is
+   on the form: [a (map #(iter-tree f %) (f a)]."
   [f a]
   [a (map #(iter-tree f %) (f a))])
 
-(defn prune [n [a children]]
+(defn game-tree
+  "Returns a lazy tree of all possible moves"
+  [board player]
+  (iter-tree moves [board player]))
+
+(defn prune
+  "Prune tree at depth n"
+  [n [a children]]
   (if (zero? n)
     [a nil]
     [a (map #(prune (dec n) %) children)]))
