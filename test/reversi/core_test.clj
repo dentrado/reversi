@@ -7,6 +7,6 @@
 
 (deftest flip-test
   (is (= (assoc test-board [2 3] \w [3 3] \w))
-      (flip test-board [2 3] \w [1 0]))
+      (flip test-board \w [2 3] [1 0]))
   (is (= (assoc test-board [3 5] \b [3 4] \b))
-      (flip test-board [3 5] \b [0 1])))
+      (flip test-board \b [3 5] [0 1])))
