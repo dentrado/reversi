@@ -8,8 +8,8 @@
 
 (def *board-size* 8)
 
-(def board {[3 3] \b [4 3] \w
-            [3 4] \w [4 4] \b})
+(def board {[3 3] \b, [4 3] \w,
+            [3 4] \w, [4 4] \b})
 
 (defn print-board [board]
   (let [line (apply str "--" (repeat (* 2 *board-size*) \-))
@@ -45,7 +45,7 @@
    a piece of the players color appears. dir is on the form [x y],
    i.e. [1 0] means east, [0 1] south, [-1 1] southwest and so on.
    Returns the set of flipped pieces (nil if no pieces can be flipped)."
-  [board pos player dir]
+  [board player pos dir]
   (loop [piece   (pos+ pos dir)
          flipped-pieces #{}]
     (condp = (board piece)
@@ -58,7 +58,7 @@
   (if (board pos) ; the position is already occupied
     nil
     (let [directions (map #(pos- % pos) (neighbours board pos))
-          flipped-pieces (apply union (map #(flip board pos player %)
+          flipped-pieces (apply union (map #(flip board player pos %)
                                            directions))]
       (if (empty? flipped-pieces)
         nil
