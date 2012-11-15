@@ -67,10 +67,12 @@
 
 (defn moves
   "returns all possible moves for the given player and board"
-  [board player]
+  [[board player]]
   (for [y (range *board-size*)
-        x (range *board-size*)]
-    [x y]))
+        x (range *board-size*)
+        :let [mv (move board player [x y])]
+        :when mv]
+    [mv (opponent player)]))
 
 (defn iter-tree
   "doc-string"
