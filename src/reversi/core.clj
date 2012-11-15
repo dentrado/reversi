@@ -71,3 +71,13 @@
   (for [y (range *board-size*)
         x (range *board-size*)]
     [x y]))
+
+(defn iter-tree
+  "doc-string"
+  [f a]
+  [a (map #(iter-tree f %) (f a))])
+
+(defn prune [n [a children]]
+  (if (zero? n)
+    [a nil]
+    [a (map #(prune (dec n) %) children)]))
