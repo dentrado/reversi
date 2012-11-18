@@ -1,8 +1,7 @@
 (ns reversi.core
   (:use [clojure.set :only [union]]))
 
-;; TODO: tree, minimax, alphabeta, heuristics
-;; tree: legal moves: inside bounds, and flips at least a piece
+;; TODO: tree ✓, minimax, alphabeta, heuristics
 
 (defmacro dbg[x] `(let [x# ~x] (println "dbg:" '~x "=" x#) x#))
 
@@ -46,7 +45,7 @@
    i.e. [1 0] means east, [0 1] south, [-1 1] southwest and so on.
    Returns the set of flipped pieces (nil if no pieces can be flipped)."
   [board player pos dir]
-  (loop [piece   (pos+ pos dir)
+  (loop [piece (pos+ pos dir)
          flipped-pieces #{}]
     (condp = (board piece)
       (opponent player) (recur (pos+ piece dir) (conj flipped-pieces piece))
@@ -92,3 +91,6 @@
   (if (zero? n)
     [a nil]
     [a (map #(prune (dec n) %) children)]))
+
+(defn naive [board]
+  (count (filter #(= \b %) (vals board))))
