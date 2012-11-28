@@ -92,5 +92,39 @@
     [val nil]
     [val (map #(prune (dec n) %) subtrees)]))
 
-(defn naive [board]
+(defn map-tree [f [val subtrees]]
+  [(f val) (map #(map-tree f %) subtrees)])
+
+(defn naive [[board player]]
   (count (filter #(= \b %) (vals board))))
+
+(declare maxi mini)
+
+(defn maxi [[val subtrees]]
+  (if (empty? subtrees)
+    val
+    (apply max (map mini subtrees))))
+
+(defn mini [[val subtrees]]
+  (if (empty? subtrees)
+    val
+    (apply min (map maxi subtrees))))
+
+;; short circuiting <=
+(defn any<=n [n nums]
+  (first (filter #(<= n %) nums)))
+
+(comment
+  (->> (game-tree board \w)
+       (prune 2)
+       (clojure.walk/prewalk-demo)))
+
+;; Unused:
+(defn reduce-tree [f g val [a subtrees]]
+  (f a
+     (if (empty? subtrees)
+       val
+       (reduce g (map #(reduce-tree f g val %) subtrees)))))
+
+(defn map-tree [f tree]
+  (reduce-tree #(vector (f %1) %2) cons nil tree))
