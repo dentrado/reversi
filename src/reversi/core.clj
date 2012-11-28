@@ -76,9 +76,9 @@
 (defn iter-tree
   "Like iterate but returns a (lazy) tree instead of a seq.
    (f a) should return a collection. Each node in the tree is
-   on the form: [a (map #(iter-tree f %) (f a)]."
-  [f a]
-  [a (map #(iter-tree f %) (f a))])
+   on the form: [a (map #(iter-tree f %) (f a))]."
+  [f x]
+  [x (map #(iter-tree f %) (f x))])
 
 (defn game-tree
   "Returns a lazy tree of all possible moves"
@@ -87,10 +87,10 @@
 
 (defn prune
   "Prune tree at depth n"
-  [n [a children]]
+  [n [val subtrees]]
   (if (zero? n)
-    [a nil]
-    [a (map #(prune (dec n) %) children)]))
+    [val nil]
+    [val (map #(prune (dec n) %) subtrees)]))
 
 (defn naive [board]
   (count (filter #(= \b %) (vals board))))
