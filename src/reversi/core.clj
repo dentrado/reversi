@@ -110,10 +110,36 @@
     val
     (apply min (map maxi subtrees))))
 
-;; short circuiting <=
-(defn any<=n [n nums]
-  (first (filter #(<= n %) nums)))
+(defn some<=n? [n nums] ; Doesn't look at all numbers if it isn't necessary
+  (some #(<= % n) nums))
 
+(defn some>=n? [n nums] ; Doesn't look at all numbers if it isn't necessary
+  (some #(>= % n) nums))
+
+(defn mapomit
+  "maps f over the list but omits values for which (pred (f previous-val) val)
+   returns true (previous-val is the last previous value that was not omitted)."
+  ([pred f list] (mapomit pred f (f (first list)) (rest list)))
+  ([pred f start-val list]
+     (when-let [[val & rest] list]
+       (if (pred start-val val)
+         (recur pred f start-val rest)
+         (let [new-val (f val)]
+           (lazy-seq (cons new-val (mapomit pred f new-val rest))))))))
+
+(defn mapmin
+  "Takes a list of lists of numbers and applies min on the lists
+   but skips lists wich contains numbers smaller than the largest
+   min-value of the previous lists."
+  [num-lists]
+  (mapomit some<=n? #(apply min %) num-lists))
+
+(defn mapmax
+  "Takes a list of lists of numbers and applies max on the lists
+   but skips lists wich contains numbers larger than the smallest
+   max-value of the previous lists."
+  [num-lists]
+  (mapomit some>=n? #(apply max %) num-lists))
 (comment
   (->> (game-tree board \w)
        (prune 2)
