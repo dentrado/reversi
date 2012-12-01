@@ -152,6 +152,84 @@
               (list val)
               (min-maxs (map maximise* subtrees)))))
 
+;; # Code for playing a game:
+
+(declare lowfirst)
+(defn highfirst [[val subtrees]]
+  [val (lazy-seq (sort #(> (first %1) (first %2))
+                       (map lowfirst subtrees)))])
+(defn lowfirst [[val subtrees]]
+  [val (lazy-seq (sort #(< (first %1) (first %2))
+                       (map highfirst subtrees)))])
+
+(lowfirst [3 (list [2 (list)] [1 (list)])])
+
+(defn minimax-player [[[board player] subtrees :as game-tree]]
+  (let [counter (atom 0)
+        tree (map-tree #(do (swap! counter inc)
+                            ;(naive %)
+   ;                         (possibilities-heuristic %)
+                            % (rand-int 100)
+                            )
+                       (prune 7 game-tree))
+        best-val (if (= player \b)
+                (maxi tree)
+                (mini tree))]
+    (println "minimax expanded: " @counter)
+    ;(nth subtrees (.indexOf tree2 best-val))
+    ))
+
+(defn ai-player-w-sort [[[board player] subtrees :as game-tree]]
+  (let [counter (atom 0)
+        tree (map-tree #(do (swap! counter inc)
+                           ; (naive %)
+                            ;(possibilities-heuristic %)
+                            % (rand-int 100)
+                            )
+                       (prune 7 game-tree))
+        tree2 (if (= player \b)
+                (maximise* (lowfirst tree))
+                (minimise* (highfirst tree)))
+        best-val (apply (if #(= player \b) max min) tree2)]
+    (println "with-sort expanded: " @counter)
+    (nth subtrees (.indexOf tree2 best-val))))
+
+(defn ai-player [[[board player] subtrees :as game-tree]]
+  (let [counter (atom 0)
+        tree (map-tree #(do (swap! counter inc)
+                            ;(naive %)
+                            ;(possibilities-heuristic %)
+                            % (rand-int 100)
+                            )
+                       (prune 7 game-tree))
+        tree2 (if (= player \b)
+                (maximise* tree)
+                (minimise* tree))
+        best-val (apply (if #(= player \b) max min) tree2)]
+    (minimax-player game-tree)
+    (ai-player-w-sort game-tree)
+    (println "alpha-beta expanded: " @counter)
+    (nth subtrees (.indexOf tree2 best-val))))
+
+(defn human-player [[[board player] subtrees]]
+  (println "You are " (if (= \b player) "black" "white"))
+  (println "Choose a move:")
+  (print-board
+   (apply assoc board (interleave
+                       (legal-positions [board player])
+                       (range))))
+  (loop [move (read-string (read-line))]
+    (if (< -1 move (count subtrees))
+      (nth subtrees move)
+      (do (println "Illegal move.")
+          (recur (read-string (read-line)))))
+    ))
+
+(declare game-ai-starts)
+(defn game-human-starts [game-tree]
+  (game-ai-starts (human-player game-tree)))
+(defn game-ai-starts [game-tree]
+  (game-human-starts (ai-player game-tree)))
 
 ;; Unused:
 (defn reduce-tree [f g val [a subtrees]]
