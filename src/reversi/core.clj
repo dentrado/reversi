@@ -110,6 +110,7 @@
     val
     (apply min (map maxi subtrees))))
 
+;; # Alpha-beta pruning
 (defn some<=n? [n nums] ; Doesn't look at all numbers if it isn't necessary
   (some #(<= % n) nums))
 
@@ -117,33 +118,42 @@
   (some #(>= % n) nums))
 
 (defn mapomit
-  "maps f over the list but omits values for which (pred (f previous-val) val)
+  "maps f over the coll but omits values for which (pred (f previous-val) val)
    returns true (previous-val is the last previous value that was not omitted)."
-  ([pred f list] (mapomit pred f (f (first list)) (rest list)))
-  ([pred f start-val list]
-     (when-let [[val & rest] list]
-       (if (pred start-val val)
-         (recur pred f start-val rest)
-         (let [new-val (f val)]
-           (lazy-seq (cons new-val (mapomit pred f new-val rest))))))))
+  ([pred f [val & more]]
+     (when val (cons (f val) (mapomit pred f (f val) more))))
+  ([pred f start-val [val & more]]
+     (when val
+       (lazy-seq
+        (if (pred start-val val)
+          (mapomit pred f start-val more)
+          (let [new-val (f val)]
+            (cons new-val (mapomit pred f new-val more))))))))
 
-(defn mapmin
+(defn max-mins
   "Takes a list of lists of numbers and applies min on the lists
    but skips lists wich contains numbers smaller than the largest
    min-value of the previous lists."
   [num-lists]
-  (mapomit some<=n? #(apply min %) num-lists))
+  (mapomit2 some<=n? #(apply min %) num-lists))
 
-(defn mapmax
+(defn min-maxs
   "Takes a list of lists of numbers and applies max on the lists
    but skips lists wich contains numbers larger than the smallest
    max-value of the previous lists."
   [num-lists]
-  (mapomit some>=n? #(apply max %) num-lists))
-(comment
-  (->> (game-tree board \w)
-       (prune 2)
-       (clojure.walk/prewalk-demo)))
+  (mapomit2 some>=n? #(apply max %) num-lists))
+
+(declare minimise*)
+(defn maximise* [[val subtrees]]
+  (lazy-seq (if (empty? subtrees)
+              (list val)
+              (max-mins (map minimise* subtrees)))))
+(defn minimise* [[val subtrees]]
+  (lazy-seq (if (empty? subtrees)
+              (list val)
+              (min-maxs (map maximise* subtrees)))))
+
 
 ;; Unused:
 (defn reduce-tree [f g val [a subtrees]]
