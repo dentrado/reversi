@@ -62,6 +62,15 @@
         (merge (assoc board pos player)
                (zipmap flipped-pieces (repeat player)))))))
 
+(defn legal-positions
+  "returns all legal positions for the given player and board"
+  [[board player]]
+  (for [y (range *board-size*)
+        x (range *board-size*)
+        :let [mv (move board player [x y])]
+        :when mv]
+    [x y]))
+
 (defn moves
   "returns all possible moves for the given player and board"
   [[board player]]
