@@ -245,11 +245,97 @@
   (game-human-starts (ai-player game-tree)))
 
 ;; Unused:
-(defn reduce-tree [f g val [a subtrees]]
-  (f a
-     (if (empty? subtrees)
-       val
-       (reduce g (map #(reduce-tree f g val %) subtrees)))))
+(comment
+  (time
+   (->> (game-tree board \w)
+        (prune 8)
+        (map-tree naive)
+        maxi))
 
-(defn map-tree [f tree]
-  (reduce-tree #(vector (f %1) %2) cons nil tree))
+  (maximise* [4 (list [2 (list)] [3 (list)])])
+  (time
+   (->> (game-tree board \w)
+        (prune 4)
+        (map-tree (juxt naive first) )
+       ; highfirst
+        maximise*
+       ; (apply max)
+        ))
+
+  (defn mapmin2
+    ([[nums & more-nums]]
+       (when nums
+         (lazy-seq (cons (apply min nums)
+                         (mapmin2 (apply min nums) more-nums)))))
+    ([pot [nums & more-nums]]
+       (when nums
+         (lazy-seq (if (some<=n? pot nums)
+                     (mapmin2 pot more-nums)
+                     (let [new-pot (apply min nums)]
+                       (cons new-pot (mapmin2 new-pot more-nums))))))))
+
+  (defn mapmax2
+    ([[nums & more-nums]]
+       (when nums
+         (lazy-seq (cons (apply max nums)
+                         (mapmax2 (apply max nums) more-nums)))))
+    ([pot [nums & more-nums]]
+       (when nums
+         (lazy-seq (if (some>=n? pot nums)
+                     (mapmax2 pot more-nums)
+                     (let [new-pot (apply max nums)]
+                       (cons new-pot (mapmax2 new-pot more-nums))))))))
+
+  (defn mapmin [[nums & more-nums]]
+    (when nums
+      (letfn [(omit [pot lists]
+                (lazy-seq (when lists
+                            (if (some<=n? pot (first lists))
+                              (omit pot (next lists))
+                              (let [new-pot (apply min (first lists))]
+                                (cons new-pot (omit new-pot (next lists))))))))]
+        (lazy-seq (cons (apply min nums)
+                        (omit (apply min nums) more-nums))))))
+
+  (defn mapmax [[nums & more-nums]]
+    (when nums
+      (letfn [(omit [pot lists]
+                (lazy-seq (when lists
+                            (if (some>=n? pot (first lists))
+                              (omit pot (next lists))
+                              (let [new-pot (apply max (first lists))]
+                                (cons new-pot (omit new-pot (next lists))))))))]
+        (lazy-seq (cons (apply max nums)
+                        (omit (apply max nums) more-nums))))))
+
+  (defn mapomit
+    "maps f over the coll but omits values for which (pred (f previous-val) val)
+   returns true (previous-val is the last previous value that was not omitted)."
+    ([pred f coll] (lazy-seq (mapomit pred f (f (first coll)) (rest coll))))
+    ([pred f start-val coll]
+       (lazy-seq
+        (if-let [[val & rest] (seq coll)]
+          (if (pred start-val val)
+            (mapomit pred f start-val rest)
+            (let [new-val (f val)]
+              (cons new-val (mapomit pred f new-val rest))))
+          (list start-val)))))
+
+  (defn maximise [[val subtrees]]
+    (if (empty? subtrees)
+      val
+      (reduce (fn [n coll]
+                (if (some<=n? n coll)
+                  n
+                  (apply min coll)))
+              (min nums)
+              (minimise coll))))
+
+  (defn reduce-tree [f g val [a subtrees]]
+    (f a
+       (if (empty? subtrees)
+         val
+         (reduce g (map #(reduce-tree f g val %) subtrees)))))
+
+  (defn map-tree [f tree]
+    (reduce-tree #(vector (f %1) %2) cons nil tree)))
