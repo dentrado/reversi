@@ -105,6 +105,10 @@
 (defn naive [[board player]]
   (count (filter #(= \b %) (vals board))))
 
+(defn possibilities-heuristic [[board player]]
+  (count (moves [board \b])))
+
+;; # Minimax
 (declare maxi mini)
 
 (defn maxi [[val subtrees]]
