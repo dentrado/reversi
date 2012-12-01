@@ -1,8 +1,6 @@
 (ns reversi.core
   (:use [clojure.set :only [union]]))
 
-;; TODO: tree ✓, minimax, alphabeta, heuristics
-
 (defmacro dbg[x] `(let [x# ~x] (println "dbg:" '~x "=" x#) x#))
 
 (def *board-size* 8)
@@ -24,9 +22,9 @@
         (println)
         (println line)))))
 
-;; (def pos- (partial mapv -))
+; (def pos- (partial mapv -))
 (defn pos- [[a b] [c d]] [(- a c) (- b d)])
-;;(def pos+ (partial mapv +))
+;(def pos+ (partial mapv +))
 (defn pos+ [[a b] [c d]] [(+ a c) (+ b d)])
 
 (defn neighbours
@@ -40,8 +38,8 @@
 (def opponent {\w \b, \b \w})
 
 (defn flip
-  "Tries to flip pieces from (not including) pos in the given direction until
-   a piece of the players color appears. dir is on the form [x y],
+  "Tries to flip pieces from (not including) pos in the given direction
+   until a piece of the players color appears. dir is on the form [x y],
    i.e. [1 0] means east, [0 1] south, [-1 1] southwest and so on.
    Returns the set of flipped pieces (nil if no pieces can be flipped)."
   [board player pos dir]
@@ -50,8 +48,8 @@
     (condp = (board piece)
       (opponent player) (recur (pos+ piece dir) (conj flipped-pieces piece))
       player            flipped-pieces
-      nil               #{})))   ; reached the end without finding
-                                 ; a piece of the players color
+      nil               #{}))) ; reached the end without finding
+                               ; a piece of the players color
 
 (defn move [board player pos]
   (if (board pos) ; the position is already occupied
