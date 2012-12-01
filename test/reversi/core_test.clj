@@ -29,10 +29,76 @@
             [1 4] \w          [3 4] \b
             ,                          [4 5] \b} ))))
 
+
+;; test if alphabeta expands less nodes than minimax
+
+(deftest alphabeta-test
+  (let [minimax-expanded (atom 0)    ; 65005
+        alphabeta-expanded (atom 0)] ; 64943 64931
+    (->> (game-tree board \w)
+         (prune 7)
+         (map-tree #(do (swap! minimax-expanded inc)
+                        (naive %)
+                        ;(rand-int 10)
+                        ))
+         maxi)
+    (->> (game-tree board \w)
+        (prune 7)
+        (map-tree #(do (swap! alphabeta-expanded inc)
+                       (naive %)
+                       ;(rand-int 10)
+                       ))
+        lowfirst  ;64293
+        maximise*
+        (apply max))
+    (println "minimax expanded:" @minimax-expanded)
+    (println "alphabeta-expanded:" @alphabeta-expanded)
+    (< @alphabeta-expanded @minimax-expanded)))
+
+(deftest alphabeta-test2
+  (let [minimax-expanded (atom 0)    ; 65005
+        alphabeta-expanded (atom 0)] ; 64943 64931
+    (->> (game-tree board \w)
+         (prune 6)
+         (map-tree #(do (swap! minimax-expanded inc)
+                        ;(naive %)
+                        % 1
+                        ;(rand-int 10)
+                        ))
+         maxi
+         (println "minimax result:"))
+
+    (->> (game-tree board \w)
+        (prune 6)
+        (map-tree #(do (swap! alphabeta-expanded inc)
+                       ;(naive %)
+                       ;(rand-int 10)
+                       % 1
+                       ))
+        ;lowfirst  ;64293
+        maximise*
+        (apply max)
+        (println "alpha-beta result:"))
+    (println "minimax expanded:" @minimax-expanded)
+    (println "alphabeta-expanded:" @alphabeta-expanded)
+    (< @alphabeta-expanded @minimax-expanded)))
+
+(deftest min-maxs-max-mins-test
+  (testing "Testing laziness of min-maxs and max-mins"
+    (let [min-maxs-count (atom 0)
+          max-mins-count (atom 0)]
+      (min-maxs (take 4 (repeatedly
+                         #(take 3 (repeatedly
+                                   (fn [] (swap! min-maxs-count inc) 1))))))
+      (max-mins (take 4 (repeatedly
+                         #(take 3 (repeatedly
+                                   (fn [] (swap! max-mins-count inc) 1))))))
+      (is (= 6 @min-maxs-count @max-mins-count)))))
+
 (defn game-zip [root]
   (z/zipper vector? second (fn [n c] [n c]) root))
 
-(def root-loc (game-zip (game-tree [test-board \w])))
+(def root-loc (game-zip (game-tree board1 \w)))
 
 (defn print-loc [loc]
   (print-board (first (first (z/node loc))))
