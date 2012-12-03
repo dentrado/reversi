@@ -91,13 +91,18 @@
     [x y]))
 
 (defn moves
-  "returns all possible moves for the given player and board"
+  "Returns all possible moves for the given player and board. The list
+  will never be empty; if the player has no legal moves a move that does
+  nothing will be returned."
   [[board player]]
-  (for [y (range *board-size*)
-        x (range *board-size*)
-        :let [mv (move board player [x y])]
-        :when mv]
-    [mv (opponent player)]))
+  (let [mvs (for [y (range *board-size*)
+                  x (range *board-size*)
+                  :let [mv (move board player [x y])]
+                  :when mv]
+              [mv (opponent player)])]
+    (if (empty? mvs)
+      (list [board (opponent player)])
+      mvs)))
 
 (defn iter-tree
   "Like iterate but returns a (lazy) tree instead of a seq.
