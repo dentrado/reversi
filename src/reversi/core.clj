@@ -286,3 +286,7 @@
 (defn game-ai-starts [game-tree]
   (game-human-starts (ai-player game-tree)))
 
+(defn game [player1 player2 game-tree]
+  (letfn [(p1 [game-tree] (p2 (player1 game-tree)))
+          (p2 [game-tree] (p1 (player2 game-tree)))]
+    (p1 game-tree)))
