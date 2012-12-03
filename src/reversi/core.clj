@@ -142,11 +142,14 @@
 (defn map-tree [f [val subtrees]]
   [(f val) (map #(map-tree f %) subtrees)])
 
-(defn naive [[board player]]
+;; # Heuristics
+(defn naive [[board _]]
   (count (filter #(= \b %) (vals board))))
 
-(defn possibilities-heuristic [[board player]]
+(defn possibilities-heuristic [[board _]]
   (count (moves [board \b])))
+
+(defn random [_] (rand-int 100))
 
 ;; # Minimax
 (declare maxi mini)
@@ -172,7 +175,9 @@
   "maps f over the coll but omits values for which (pred (f previous-val) val)
    returns true (previous-val is the last previous value that was not omitted)."
   ([pred f [val & more]]
-     (when val (cons (f val) (mapomit pred f (f val) more))))
+     (when val
+       (let [start-val (f val)]
+         (cons start-val (mapomit pred f start-val more)))))
   ([pred f start-val [val & more]]
      (when val
        (lazy-seq
@@ -186,14 +191,14 @@
    but skips lists wich contains numbers smaller than the largest
    min-value of the previous lists."
   [num-lists]
-  (mapomit2 some<=n? #(apply min %) num-lists))
+  (mapomit some<=n? #(apply min %) num-lists))
 
 (defn min-maxs
   "Takes a list of lists of numbers and applies max on the lists
    but skips lists wich contains numbers larger than the smallest
    max-value of the previous lists."
   [num-lists]
-  (mapomit2 some>=n? #(apply max %) num-lists))
+  (mapomit some>=n? #(apply max %) num-lists))
 
 (declare minimise*)
 (defn maximise* [[val subtrees]]
@@ -235,9 +240,8 @@
 (defn ai-player-w-sort [[[board player] subtrees :as game-tree]]
   (let [counter (atom 0)
         tree (map-tree #(do (swap! counter inc)
-                           ; (naive %)
+                            (naive %)
                             ;(possibilities-heuristic %)
-                            % (rand-int 100)
                             )
                        (prune 7 game-tree))
         tree2 (if (= player \b)
@@ -250,16 +254,14 @@
 (defn ai-player [[[board player] subtrees :as game-tree]]
   (let [counter (atom 0)
         tree (map-tree #(do (swap! counter inc)
-                            ;(naive %)
+                            (naive %)
                             ;(possibilities-heuristic %)
-                            % (rand-int 100)
-                            )
+                             )
                        (prune 7 game-tree))
         tree2 (if (= player \b)
                 (maximise* tree)
                 (minimise* tree))
         best-val (apply (if #(= player \b) max min) tree2)]
-    (minimax-player game-tree)
     (ai-player-w-sort game-tree)
     (println "alpha-beta expanded: " @counter)
     (nth subtrees (.indexOf tree2 best-val))))
