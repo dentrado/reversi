@@ -15,4 +15,4 @@ O for white or X for black.
   (if-not (and position time-limit (zero? (count args)))
     (usage)
     nil ; TODO do stuff
-    )
+    ))
