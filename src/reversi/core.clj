@@ -8,7 +8,7 @@
 (def board {[3 3] \b, [4 3] \w,
             [3 4] \w, [4 4] \b})
 
-(defn print-board [board]
+(defn print-ascii-board [board]
   (let [line (apply str "--" (repeat (* 2 *board-size*) \-))
         numbers (apply str " |" (interpose \| (range *board-size*)))]
     (println numbers)
@@ -18,6 +18,25 @@
       (when (zero? x) (print (str y \|)))
       (print (or (board [x y]) \space))
       (print \|)
+      (when (= x 7)
+        (println)
+        (println line)))))
+
+(defn print-board [board]
+  (let [line (apply str "─┼" (repeat *board-size* "───┼"))
+        numbers (apply str " │ " (interpose " │ " (range *board-size*)))
+        pieces {\w " ○ ", \b " ● ", nil "   "}
+        pad (fn [s] (case (count (str s))
+                     1 (str \space s \space)
+                     2 (str s \space)
+                     s))]
+    (println numbers)
+    (println line)
+    (doseq [y (range *board-size*)
+            x (range *board-size*)]
+      (when (zero? x) (print (str y \|)))
+      (print (or (pieces (board [x y])) (pad (board [x y]))))
+      (print "│")
       (when (= x 7)
         (println)
         (println line)))))
