@@ -104,6 +104,22 @@
       (list [board (opponent player)])
       mvs)))
 
+(defn game-over? [[val subtrees]]
+  (let [[val2 subtrees2] (first subtrees)
+        [val3 _]         (first subtrees2)]
+    (= val val3)))
+
+(defn winner
+  "Returns the winner (b or w) or nil on tie."
+  [board]
+  (let [[blacks whites] (->> (sort (vals board))
+                             (partition-by identity)
+                             (map count))]
+    (cond
+     (< blacks whites) \w
+     (> blacks whites) \b
+     :else nil))) ; tie
+
 (defn iter-tree
   "Like iterate but returns a (lazy) tree instead of a seq.
    (f a) should return a collection. Each node in the tree is
