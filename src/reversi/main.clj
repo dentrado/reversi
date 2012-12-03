@@ -2,7 +2,7 @@
   (:gen-class))
 
 (defn usage []
-  (print
+  (println
    "Usage: program-name position time-limit
 
 where position is a 65 character long string.
