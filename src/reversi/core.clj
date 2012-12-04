@@ -251,8 +251,9 @@
                 (minimise* tree))
         best-val (apply (if #(= player \b) max min) tree2)]
              ;    (ai-player-w-sort game-tree)
-    (println "alpha-beta expanded: " @counter)
-    (println "heuristic score: " best-val)
+    (binding [*out* *err*]
+      (println "alpha-beta expanded: " @counter)
+      (println "heuristic score: " best-val))
     (nth subtrees (.indexOf tree2 best-val))))
 
 (defn human-player [[[board player] subtrees]]

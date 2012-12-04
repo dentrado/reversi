@@ -35,6 +35,6 @@ O for white or X for black.
     (usage)
     (let [move (str->move move-str)
           next-move (first (ai-player heur/position 7 (game-tree move)))]
-      (move->str move next-move))))
+      (println (move->str move next-move)))))
 
 ;"WEEEEEEEEEEEEEEEEEEEEEEEEEEEOXEEEEEEXOEEEEEEEEEEEEEEEEEEEEEEEEEEE"
