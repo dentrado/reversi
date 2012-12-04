@@ -215,14 +215,12 @@
 
 (lowfirst [3 (list [2 (list)] [1 (list)])])
 
-(defn minimax-player [[[board player] subtrees :as game-tree]]
-  (let [counter (atom 0)
+(defn minimax-player [heuristic-fn depth [[board player] subtrees :as game-tree]]
+  (let [[[board player] subtrees] game-tree
+        counter (atom 0)
         tree (map-tree #(do (swap! counter inc)
-                            ;(naive %)
-   ;                         (possibilities-heuristic %)
-                            % (rand-int 100)
-                            )
-                       (prune 7 game-tree))
+                            (heuristic-fn %))
+                       (prune depth game-tree))
         best-val (if (= player \b)
                 (maxi tree)
                 (mini tree))]
@@ -244,19 +242,19 @@
     (println "with-sort expanded: " @counter)
     (nth subtrees (.indexOf tree2 best-val))))
 
-(defn ai-player [[[board player] subtrees :as game-tree]]
-  (let [counter (atom 0)
+(defn ai-player [heuristic depth game-tree]
+  (let [[[board player] subtrees] game-tree
+        counter (atom 0)
         tree (map-tree #(do (swap! counter inc)
-                            ;(naive %)
-                            (possibilities-heuristic %)
-                             )
-                       (prune 5 game-tree))
+                            (heuristic %))
+                       (prune depth game-tree))
         tree2 (if (= player \b)
                 (maximise* tree)
                 (minimise* tree))
         best-val (apply (if #(= player \b) max min) tree2)]
-;    (ai-player-w-sort game-tree)
+             ;    (ai-player-w-sort game-tree)
     (println "alpha-beta expanded: " @counter)
+    (println "heuristic score: " best-val)
     (nth subtrees (.indexOf tree2 best-val))))
 
 (defn human-player [[[board player] subtrees]]
