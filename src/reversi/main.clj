@@ -26,7 +26,9 @@ O for white or X for black.
 (defn move->str [[prev-board p1] [board _]]
   (let [[[x y]] (seq (intersection (set (legal-positions [prev-board p1]))
                                    (difference (set (keys board)) (set (keys prev-board)))))]
-    (str "(" y "," x ")")))
+    (if (nil? x)
+      "pass"
+      (str "(" y "," x ")"))))
 
 (defn -main [move-str time-limit & args]
   (if-not (and move-str time-limit (zero? (count args)))
@@ -35,4 +37,4 @@ O for white or X for black.
           next-move (first (ai-player heur/position 7 (game-tree move)))]
       (move->str move next-move))))
 
-"WEEEEEEEEEEEEEEEEEEEEEEEEEEEOXEEEEEEXOEEEEEEEEEEEEEEEEEEEEEEEEEEE"
+;"WEEEEEEEEEEEEEEEEEEEEEEEEEEEOXEEEEEEXOEEEEEEEEEEEEEEEEEEEEEEEEEEE"
