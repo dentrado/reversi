@@ -1,5 +1,6 @@
 (ns reversi.core
-  (:use [clojure.set :only [union]]))
+  (:use [clojure.set :only [union]])
+  (:require [reversi.heuristic]))
 
 (defmacro dbg[x] `(let [x# ~x] (println "dbg:" '~x "=" x#) x#))
 
@@ -142,15 +143,6 @@
 
 (defn map-tree [f [val subtrees]]
   [(f val) (map #(map-tree f %) subtrees)])
-
-;; # Heuristics
-(defn naive [[board _]]
-  (count (filter #(= \b %) (vals board))))
-
-(defn possibilities-heuristic [[board _]]
-  (count (moves [board \b])))
-
-(defn random [_] (rand-int 100))
 
 ;; # Minimax
 (declare maxi mini)
