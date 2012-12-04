@@ -227,13 +227,12 @@
     ;(nth subtrees (.indexOf tree2 best-val))
     ))
 
-(defn ai-player-w-sort [[[board player] subtrees :as game-tree]]
+(defn ai-player-w-sort [heuristic-fn depth [[board player] subtrees :as game-tree]]
   (let [counter (atom 0)
         tree (map-tree #(do (swap! counter inc)
-                            (naive %)
-                            ;(possibilities-heuristic %)
+                            (heuristic-fn %)
                             )
-                       (prune 7 game-tree))
+                       (prune depth game-tree))
         tree2 (if (= player \b)
                 (maximise* (lowfirst tree))
                 (minimise* (highfirst tree)))
