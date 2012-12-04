@@ -130,7 +130,7 @@
 
 (defn game-tree
   "Returns a lazy tree of all possible moves"
-  [board player]
+  [[board player]]
   (iter-tree moves [board player]))
 
 (defn prune
