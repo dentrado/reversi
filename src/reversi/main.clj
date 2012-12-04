@@ -1,4 +1,5 @@
 (ns reversi.main
+  (:use reversi.core)
   (:gen-class))
 
 (defn usage []
