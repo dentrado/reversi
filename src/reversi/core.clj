@@ -1,6 +1,5 @@
 (ns reversi.core
-  (:use [clojure.set :only [union]])
-  (:require [reversi.heuristic]))
+  (:use [clojure.set :only [union]]))
 
 (defmacro dbg[x] `(let [x# ~x] (println "dbg:" '~x "=" x#) x#))
 
