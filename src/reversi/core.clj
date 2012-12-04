@@ -254,15 +254,15 @@
 (defn ai-player [[[board player] subtrees :as game-tree]]
   (let [counter (atom 0)
         tree (map-tree #(do (swap! counter inc)
-                            (naive %)
-                            ;(possibilities-heuristic %)
+                            ;(naive %)
+                            (possibilities-heuristic %)
                              )
-                       (prune 7 game-tree))
+                       (prune 5 game-tree))
         tree2 (if (= player \b)
                 (maximise* tree)
                 (minimise* tree))
         best-val (apply (if #(= player \b) max min) tree2)]
-    (ai-player-w-sort game-tree)
+;    (ai-player-w-sort game-tree)
     (println "alpha-beta expanded: " @counter)
     (nth subtrees (.indexOf tree2 best-val))))
 
@@ -287,6 +287,9 @@
   (game-human-starts (ai-player game-tree)))
 
 (defn game [player1 player2 game-tree]
-  (letfn [(p1 [game-tree] (p2 (player1 game-tree)))
-          (p2 [game-tree] (p1 (player2 game-tree)))]
-    (p1 game-tree)))
+  (let [next-tree (player1 game-tree)]
+    (if (game-over? next-tree)
+      (do
+        (println "The winner is" ({\b "black" \w "white"} (winner (ffirst next-tree))))
+        (ffirst next-tree))
+      (game player2 player1 next-tree))))
