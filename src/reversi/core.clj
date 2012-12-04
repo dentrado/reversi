@@ -5,8 +5,8 @@
 
 (def *board-size* 8)
 
-(def board {[3 3] \b, [4 3] \w,
-            [3 4] \w, [4 4] \b})
+(def board {[3 3] \w, [4 3] \b,
+            [3 4] \b, [4 4] \w})
 
 (defn print-ascii-board [board]
   (let [line (apply str "--" (repeat (* 2 *board-size*) \-))
