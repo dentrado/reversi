@@ -268,14 +268,7 @@
     (if (< -1 move (count subtrees))
       (nth subtrees move)
       (do (println "Illegal move.")
-          (recur (read-string (read-line)))))
-    ))
-
-(declare game-ai-starts)
-(defn game-human-starts [game-tree]
-  (game-ai-starts (human-player game-tree)))
-(defn game-ai-starts [game-tree]
-  (game-human-starts (ai-player game-tree)))
+          (recur (read-string (read-line)))))))
 
 (defn game [player1 player2 game-tree]
   (let [next-tree (player1 game-tree)]
