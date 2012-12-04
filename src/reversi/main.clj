@@ -1,5 +1,7 @@
 (ns reversi.main
+  (:use [clojure.set :only [intersection difference]])
   (:use reversi.core)
+  (:require [reversi.heuristic :as heur])
   (:gen-class))
 
 (defn usage []
