@@ -28,7 +28,7 @@ O for white or X for black.
                                    (difference (set (keys board)) (set (keys prev-board)))))]
     (if (nil? x)
       "pass"
-      (str "(" y "," x ")"))))
+      (str "(" (inc y) "," (inc x) ")"))))
 
 (defn -main [move-str time-limit & args]
   (if-not (and move-str time-limit (zero? (count args)))
