@@ -114,7 +114,8 @@
   [board]
   (let [[blacks whites] (->> (sort (vals board))
                              (partition-by identity)
-                             (map count))]
+                             (map count))
+        [blacks whites] [(or blacks 0) (or whites 0)]]
     (cond
      (< blacks whites) \w
      (> blacks whites) \b
