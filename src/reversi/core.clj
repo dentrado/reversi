@@ -34,7 +34,7 @@
     (println line)
     (doseq [y (range *board-size*)
             x (range *board-size*)]
-      (when (zero? x) (print (str y \|)))
+      (when (zero? x) (print (str y "│")))
       (print (or (pieces (board [x y])) (pad (board [x y]))))
       (print "│")
       (when (= x 7)
