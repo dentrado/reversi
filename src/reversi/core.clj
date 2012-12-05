@@ -229,14 +229,13 @@
 (defn ai-player-w-sort [heuristic-fn depth [[board player] subtrees :as game-tree]]
   (let [counter (atom 0)
         tree (map-tree #(do (swap! counter inc)
-                            (heuristic-fn %)
-                            )
+                            (heuristic-fn %))
                        (prune depth game-tree))
         tree2 (if (= player \b)
-                (maximise* (lowfirst tree))
-                (minimise* (highfirst tree)))
+                (maximise* (highfirst tree))
+                (minimise* (lowfirst tree)))
         best-val (apply (if #(= player \b) max min) tree2)]
-    (println "with-sort expanded: " @counter)
+;   (println "with-sort expanded: " @counter)
     (nth subtrees (.indexOf tree2 best-val))))
 
 (defn ai-player [heuristic depth game-tree]
