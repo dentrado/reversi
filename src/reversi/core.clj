@@ -203,8 +203,6 @@
               (list val)
               (min-maxs (map maximise* subtrees)))))
 
-;; # Code for playing a game:
-
 (declare lowfirst)
 (defn highfirst [[val subtrees]]
   [val (lazy-seq (sort #(> (first %1) (first %2))
@@ -213,7 +211,7 @@
   [val (lazy-seq (sort #(< (first %1) (first %2))
                        (map highfirst subtrees)))])
 
-(lowfirst [3 (list [2 (list)] [1 (list)])])
+;; # Code for playing a game:
 
 (defn minimax-player [heuristic-fn depth [[board player] subtrees :as game-tree]]
   (let [[[board player] subtrees] game-tree
