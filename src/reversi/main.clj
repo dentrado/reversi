@@ -34,7 +34,10 @@ O for white or X for black.
   (if-not (and move-str time-limit (zero? (count args)))
     (usage)
     (let [move (str->move move-str)
-          next-move (first (ai-player heur/position 7 (game-tree move)))]
+          next-move (first (ai-player-w-sort heur/position 7 (game-tree move)))]
       (println (move->str move next-move)))))
 
-;"WEEEEEEEEEEEEEEEEEEEEEEEEEEEOXEEEEEEXOEEEEEEEEEEEEEEEEEEEEEEEEEEE"
+;;"WEEEEEEEEEEEEEEEEEEEEEEEEEEEOXEEEEEEXOEEEEEEEEEEEEEEEEEEEEEEEEEEE"
+
+;;"EEEEEEEEEEEEEEEEEEEEEEEEEEEOOOEEEEEXOOEEEOOOXOEEEEEEEEEEEEEEEEEE"
+;;"EEEEEEEEEEEEEEEEEEEEEEEEEEEOOOEEEEEXOOEEEOOOXOEEEEEEEEEEEEEEEEEE"
