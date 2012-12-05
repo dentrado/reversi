@@ -166,17 +166,18 @@
 (defn mapomit
   "maps f over the coll but omits values for which (pred (f previous-val) val)
    returns true (previous-val is the last previous value that was not omitted)."
-  ([pred f [val & more]]
-     (when val
-       (let [start-val (f val)]
-         (cons start-val (mapomit pred f start-val more)))))
-  ([pred f start-val [val & more]]
-     (when val
-       (lazy-seq
-        (if (pred start-val val)
-          (mapomit pred f start-val more)
-          (let [new-val (f val)]
-            (cons new-val (mapomit pred f new-val more))))))))
+  ;; Note: We can't use destructuring ([val & more-vals]) since that will force
+  ;; the first element in more-vals, and the alpha-beta pruning won't be optimal.
+  ([pred f vals]
+     (when vals
+       (let [start-val (f (first vals))]
+         (cons start-val (lazy-seq (mapomit pred f start-val (next vals)))))))
+  ([pred f start-val vals]
+     (when vals
+       (if (pred start-val (first vals))
+         (mapomit pred f start-val (next vals))
+         (let [new-val (f (first vals))]
+           (cons new-val (lazy-seq (mapomit pred f new-val (next vals)))))))))
 
 (defn max-mins
   "Takes a list of lists of numbers and applies min on the lists
