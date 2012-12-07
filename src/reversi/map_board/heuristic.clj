@@ -1,5 +1,5 @@
-(ns reversi.heuristic
-  (:use [reversi.core :only [moves]]))
+(ns reversi.map-board.heuristic
+  (:require [reversi.map-board :as b]))
 
 (def position-scores {[0 0] 99, [1 0]  -8, [2 0]  8, [3 0]  6,
                       [0 1] -8, [1 1] -24, [2 1] -4, [3 1] -3,
@@ -20,15 +20,24 @@
   (let [[blacks whites] (partition-by (comp identity second)
                                       (sort (fn [[k1 v1] [k2 v2]]
                                               (compare v1 v2))
-                                            board))
-        black-score (apply + (map score-position blacks))
-        white-score (apply + (map score-position whites))]
+                                             board))
+        black-score (reduce + (map score-position blacks))
+        white-score (reduce + (map score-position whites))]
+    (- black-score white-score)))
+
+(defn position [[board _]]
+  (let [[empties blacks whites borders] (partition-by (comp identity second)
+                                      (sort (fn [[k1 v1] [k2 v2]]
+                                              (compare v1 v2))
+                                            (map vector (range) board)))
+        black-score (reduce + (map score-position blacks))
+        white-score (reduce + (map score-position whites))]
     (- black-score white-score)))
 
 (defn naive [[board _]]
-  (count (filter #(= \b %) (vals board))))
+  (count (filter black? (vals board))))
 
 (defn mobility [[board _]]
-  (count (moves [board \b])))
+  (count (b/moves [board b/black])))
 
 (defn random [_] (rand-int 100))

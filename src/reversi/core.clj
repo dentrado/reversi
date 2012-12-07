@@ -1,108 +1,10 @@
 (ns reversi.core
-  (:use [clojure.set :only [union]]))
+  (:use [reversi.vector-board :only [;board ;print-board
+                                     moves ;legal-positions
+                                     black?]]))
+;(remove-ns 'reversi.core)
 
 (defmacro dbg[x] `(let [x# ~x] (println "dbg:" '~x "=" x#) x#))
-
-(def *board-size* 8)
-
-(def board {[3 3] \w, [4 3] \b,
-            [3 4] \b, [4 4] \w})
-
-(defn print-ascii-board [board]
-  (let [line (apply str "--" (repeat (* 2 *board-size*) \-))
-        numbers (apply str " |" (interpose \| (range *board-size*)))]
-    (println numbers)
-    (println line)
-    (doseq [y (range *board-size*)
-            x (range *board-size*)]
-      (when (zero? x) (print (str y \|)))
-      (print (or (board [x y]) \space))
-      (print \|)
-      (when (= x 7)
-        (println)
-        (println line)))))
-
-(defn print-board [board]
-  (let [line (apply str "─┼" (repeat *board-size* "───┼"))
-        numbers (apply str " │ " (interpose " │ " (range *board-size*)))
-        pieces {\w " ○ ", \b " ● ", nil "   "}
-        pad (fn [s] (case (count (str s))
-                     1 (str \space s \space)
-                     2 (str s \space)
-                     s))]
-    (println numbers)
-    (println line)
-    (doseq [y (range *board-size*)
-            x (range *board-size*)]
-      (when (zero? x) (print (str y "│")))
-      (print (or (pieces (board [x y])) (pad (board [x y]))))
-      (print "│")
-      (when (= x 7)
-        (println)
-        (println line)))))
-
-; (def pos- (partial mapv -))
-(defn pos- [[a b] [c d]] [(- a c) (- b d)])
-;(def pos+ (partial mapv +))
-(defn pos+ [[a b] [c d]] [(+ a c) (+ b d)])
-
-(defn neighbours
-  "returns all occupied positions from [x-1 y-1] to [x+1 y+1]"
-  [board [x y]]
-  (for [a (range (dec x) (+ x 2))
-        b (range (dec y) (+ y 2))
-        :when (board [a b])]
-    [a b]))
-
-(def opponent {\w \b, \b \w})
-
-(defn flip
-  "Tries to flip pieces from (not including) pos in the given direction
-   until a piece of the players color appears. dir is on the form [x y],
-   i.e. [1 0] means east, [0 1] south, [-1 1] southwest and so on.
-   Returns the set of flipped pieces (nil if no pieces can be flipped)."
-  [board player pos dir]
-  (loop [piece (pos+ pos dir)
-         flipped-pieces #{}]
-    (condp = (board piece)
-      (opponent player) (recur (pos+ piece dir) (conj flipped-pieces piece))
-      player            flipped-pieces
-      nil               #{}))) ; reached the end without finding
-                               ; a piece of the players color
-
-(defn move [board player pos]
-  (if (board pos) ; the position is already occupied
-    nil
-    (let [directions (map #(pos- % pos) (neighbours board pos))
-          flipped-pieces (apply union (map #(flip board player pos %)
-                                           directions))]
-      (if (empty? flipped-pieces)
-        nil
-        (merge (assoc board pos player)
-               (zipmap flipped-pieces (repeat player)))))))
-
-(defn legal-positions
-  "returns all legal positions for the given player and board"
-  [[board player]]
-  (for [y (range *board-size*)
-        x (range *board-size*)
-        :let [mv (move board player [x y])]
-        :when mv]
-    [x y]))
-
-(defn moves
-  "Returns all possible moves for the given player and board. The list
-  will never be empty; if the player has no legal moves a move that does
-  nothing will be returned."
-  [[board player]]
-  (let [mvs (for [y (range *board-size*)
-                  x (range *board-size*)
-                  :let [mv (move board player [x y])]
-                  :when mv]
-              [mv (opponent player)])]
-    (if (empty? mvs)
-      (list [board (opponent player)])
-      mvs)))
 
 (defn game-over? [[val subtrees]]
   (let [[val2 subtrees2] (first subtrees)
@@ -219,24 +121,38 @@
         tree (map-tree #(do (swap! counter inc)
                             (heuristic-fn %))
                        (prune depth game-tree))
-        best-val (if (= player \b)
+        best-val (if (black? player)
                 (maxi tree)
                 (mini tree))]
     (println "minimax expanded: " @counter)
     ;(nth subtrees (.indexOf tree2 best-val))
     ))
 
-(defn ai-player-w-sort [heuristic-fn depth [[board player] subtrees :as game-tree]]
-  (let [counter (atom 0)
-        tree (map-tree #(do (swap! counter inc)
-                            (heuristic-fn %))
-                       (prune depth game-tree))
-        tree2 (if (= player \b)
+(defn ai-player-w-sort [heuristic-fn depth game-tree]
+  (let [[[board player] subtrees] game-tree
+        tree (map-tree heuristic-fn (prune depth game-tree))
+        tree2 (if (black? player)
                 (maximise* (highfirst tree))
                 (minimise* (lowfirst tree)))
-        best-val (apply (if #(= player \b) max min) tree2)]
-;   (println "with-sort expanded: " @counter)
+        best-val (apply (if #(black? player) max min) tree2)]
     (nth subtrees (.indexOf tree2 best-val))))
+
+
+(defn parallel-ai-player-w-sort [heuristic-fn depth game-tree]
+  (let [[[board player] subtrees] game-tree
+        tree (if (black? player)
+               (max-mins (pmap #(minimise*
+                                 (highfirst
+                                  (map-tree heuristic-fn
+                                            (prune (dec depth) %))))
+                               subtrees))
+               (min-maxs (pmap #(maximise*
+                                 (lowfirst
+                                  (map-tree heuristic-fn
+                                            (prune (dec depth) %))))
+                               subtrees)))
+        best-val (apply (if #(black? player) max min) tree)]
+    (nth subtrees (.indexOf tree best-val))))
 
 (defn ai-player [heuristic depth game-tree]
   (let [[[board player] subtrees] game-tree
@@ -244,28 +160,29 @@
         tree (map-tree #(do (swap! counter inc)
                             (heuristic %))
                        (prune depth game-tree))
-        tree2 (if (= player \b)
+        tree2 (if (black? player)
                 (maximise* tree)
                 (minimise* tree))
-        best-val (apply (if #(= player \b) max min) tree2)]
+        best-val (apply (if #(black? player) max min) tree2)]
              ;    (ai-player-w-sort game-tree)
-    (binding [*out* (java.io.PrintWriter. System/err)]
-      (println "alpha-beta expanded: " @counter)
-      (println "heuristic score: " best-val))
+;    (binding [*out* (java.io.PrintWriter. System/err)])
+    (println "alpha-beta expanded: " @counter)
+    (println "heuristic score: " best-val)
     (nth subtrees (.indexOf tree2 best-val))))
 
-(defn human-player [[[board player] subtrees]]
-  (println "You are " (if (= \b player) "black" "white"))
-  (println "Choose a move:")
-  (print-board
-   (apply assoc board (interleave
-                       (legal-positions [board player])
-                       (range))))
-  (loop [move (read-string (read-line))]
-    (if (< -1 move (count subtrees))
-      (nth subtrees move)
-      (do (println "Illegal move.")
-          (recur (read-string (read-line)))))))
+(comment
+  (defn human-player [[[board player] subtrees]]
+    (println "You are " (if (= \b player) "black" "white"))
+    (println "Choose a move:")
+    (print-board
+     (apply assoc board (interleave
+                         (legal-positions [board player])
+                         (range))))
+    (loop [move (read-string (read-line))]
+      (if (< -1 move (count subtrees))
+        (nth subtrees move)
+        (do (println "Illegal move.")
+            (recur (read-string (read-line))))))))
 
 (defn game [player1 player2 game-tree]
   (let [next-tree (player1 game-tree)]
