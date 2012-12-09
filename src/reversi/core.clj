@@ -1,28 +1,10 @@
 (ns reversi.core
-  (:use [reversi.vector-board :only [;board ;print-board
-                                     moves ;legal-positions
-                                     black?]]))
+  (:use [reversi.vector-board :only [moves black?]]))
 ;(remove-ns 'reversi.core)
 
 (defmacro dbg[x] `(let [x# ~x] (println "dbg:" '~x "=" x#) x#))
 
-(defn game-over? [[val subtrees]]
-  (let [[val2 subtrees2] (first subtrees)
-        [val3 _]         (first subtrees2)]
-    (= val val3)))
-
-(defn winner
-  "Returns the winner (b or w) or nil on tie."
-  [board]
-  (let [[blacks whites] (->> (sort (vals board))
-                             (partition-by identity)
-                             (map count))
-        [blacks whites] [(or blacks 0) (or whites 0)]]
-    (cond
-     (< blacks whites) \w
-     (> blacks whites) \b
-     :else nil))) ; tie
-
+;; # Game tree generation and manipulation
 (defn iter-tree
   "Like iterate but returns a (lazy) tree instead of a seq.
    (f a) should return a collection. Each node in the tree is
@@ -46,7 +28,7 @@
   [(f val) (map #(map-tree f %) subtrees)])
 
 ;; # Minimax
-(declare maxi mini)
+(declare mini)
 
 (defn maxi [[val subtrees]]
   (if (empty? subtrees)
@@ -115,7 +97,7 @@
 
 ;; # Code for playing a game:
 
-(defn minimax-player [heuristic-fn depth [[board player] subtrees :as game-tree]]
+(defn minimax-player [heuristic-fn depth game-tree]
   (let [[[board player] subtrees] game-tree
         counter (atom 0)
         tree (map-tree #(do (swap! counter inc)
@@ -136,7 +118,6 @@
                 (minimise* (lowfirst tree)))
         best-val (apply (if #(black? player) max min) tree2)]
     (nth subtrees (.indexOf tree2 best-val))))
-
 
 (defn parallel-ai-player-w-sort [heuristic-fn depth game-tree]
   (let [[[board player] subtrees] game-tree
@@ -183,6 +164,24 @@
         (nth subtrees move)
         (do (println "Illegal move.")
             (recur (read-string (read-line))))))))
+
+
+(defn game-over? [[val subtrees]]
+  (let [[val2 subtrees2] (first subtrees)
+        [val3 _]         (first subtrees2)]
+    (= val val3)))
+
+(defn winner
+  "Returns the winner (b or w) or nil on tie."
+  [board]
+  (let [[blacks whites] (->> (sort (vals board))
+                             (partition-by identity)
+                             (map count))
+        [blacks whites] [(or blacks 0) (or whites 0)]]
+    (cond
+     (< blacks whites) \w
+     (> blacks whites) \b
+     :else nil))) ; tie
 
 (defn game [player1 player2 game-tree]
   (let [next-tree (player1 game-tree)]
