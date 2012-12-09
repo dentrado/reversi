@@ -27,7 +27,8 @@
           (range 11 89)))
 
 (defn naive [[board _]]
-  (count (filter #(= \b %) (vals board))))
+  (- (count (filter b/black? board))
+     (count (filter b/white? board))))
 
 (defn mobility [[board _]]
   (count (b/moves [board b/black])))
