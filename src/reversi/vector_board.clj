@@ -1,14 +1,15 @@
 (ns reversi.vector-board
-  (:use [clojure.set :only [union]]))
+  "Functions for manipulating boards and generating moves."
+  (:use [clojure.set :only [union intersection difference]]))
 
-(def *board-size* 8)
+(def board-size 8)
 
 (def empty 0)
 (def black 1)
 (def white 2)
 (def outer 3)
 
-(def board
+(def initial-board
   [3 3 3 3 3 3 3 3 3 3
    3 0 0 0 0 0 0 0 0 3
    3 0 0 0 0 0 0 0 0 3
@@ -21,12 +22,13 @@
    3 3 3 3 3 3 3 3 3 3])
 
 (defn black? [player] (= player black))
+(defn white? [player] (= player white))
 (defn occupied? [pos] (or (= pos black) (= pos white)))
 
 (def opponent [0 2 1])
 
 (defn neighbours
-  "returns all occupied positions from [x-1 y-1] to [x+1 y+1]"
+  "returns all occupied positions adjacent to pos (including pos, if it is occupied)."
   [board pos]
   (for [a [(- pos 10) pos (+ pos 10)]
         b [(dec a) a (inc a)]
@@ -47,12 +49,15 @@
       empty             #{}
       outer             #{})))
 
-(defn move [board player pos]
+(defn move
+  "Returns a board with a piece of the given players color placed at pos
+  and all affected pieces flipped, or nil if the move is illegal."
+  [board player pos]
   (when-not (occupied? (board pos))
     (let [directions (map #(- % pos) (neighbours board pos))
           flipped-pieces (apply union (map #(flip board player pos %)
                                            directions))]
-      (when-not (= #{} flipped-pieces) ; faster than empty?
+      (when-not (= #{} flipped-pieces) ; faster than "empty?"
         (apply assoc board pos player
                (interleave flipped-pieces (repeat player)))))))
 
@@ -61,8 +66,8 @@
   will never be empty; if the player has no legal moves a move that does
   nothing will be returned."
   [[board player]]
-  (let [mvs (for [y (range 1 (inc *board-size*))
-                  x (range 1 (inc *board-size*))
+  (let [mvs (for [y (range 1 (inc board-size))
+                  x (range 1 (inc board-size))
                   :let [mv (move board player (+ x (* 10 y)))]
                   :when mv]
               [mv (opponent player)])]
@@ -73,29 +78,34 @@
 (defn legal-positions
   "returns all legal positions for the given player and board"
   [[board player]]
-  (for [y (range 1 (inc *board-size*))
-        x (range 1 (inc *board-size*))
-        :let [mv (move board player [x y])]
+  (for [y (range 1 (inc board-size))
+        x (range 1 (inc board-size))
+        :let [pos (+ x (* 10 y))
+              mv (move board player pos)]
         :when mv]
-    [x y]))
+    pos))
 
+(defn print-board [board]
+  (let [display-piece ["." "●" "○" "█"]]
+    (doseq [row (partition 10 board)]
+      (apply println (map display-piece row)))))
+
+;; # Converting from and to string representation
 (defn str->move [[str-player &  str-board]]
   (let [player ({\W white, \B black} str-player)
-        board (vec (concat [0 0 0 0 0 0 0 0 0 0, 0]
+        board (vec (concat (repeat 11 outer)
                            (->> str-board
                                 (map {\E empty, \O white, \X black})
                                 (partition 8)
-                                (interpose [0 0])
+                                (interpose [outer outer])
                                 (flatten))
-                           [0 0 0 0 0 0 0 0 0 0 0]))]
+                           (repeat 11 outer)))]
     [board player]))
 
-(defn move->str [[prev-board p1] [board _]]
-  (let [[[x y]] (seq (intersection (set (legal-positions [prev-board p1]))
-                                   (difference (set (keys board)) (set (keys prev-board)))))]
-    (if (nil? x)
-      "pass"
-      (str "(" (inc y) "," (inc x) ")"))))
-
-(defn print-board [board]
-  (dorun (map println (partition 10 board))))
+(comment "NOT WORKING:"
+  (defn move->str [[prev-board p1] [board _]]
+    (let [[[x y]] (seq (intersection (set (legal-positions [prev-board p1]))
+                                     (difference (set (keys board)) (set (keys prev-board)))))]
+      (if (nil? x)
+        "pass"
+        (str "(" (inc y) "," (inc x) ")")))))
