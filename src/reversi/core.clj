@@ -178,3 +178,17 @@
     (if (game-over? next-tree)
       (score (ffirst next-tree))
       (game player2 player1 next-tree))))
+
+(defn random-game-series
+  "Play n-pairs pairs of games, players swapping color. Each pair of
+  games starts from a random position. Returns the score for each
+  game. A positive score means that player1 won, a negative that player2
+  won."
+  [player1 player2 n-pairs game-tree]
+  (flatten
+   (for [tree (take n-pairs
+                    (repeatedly
+                     #(nth (iterate (comp rand-nth second) game-tree)
+                           10)))]
+     [(game player1 player2 tree)
+      (- (game player2 player1 tree))])))
