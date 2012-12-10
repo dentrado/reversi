@@ -1,5 +1,6 @@
 (ns reversi.core
-  (:use [reversi.vector-board :only [moves black?]]))
+  (:use [reversi.vector-board :only [moves black? legal-positions print-board]]
+        [reversi.vector-board.heuristic :only [naive]]))
 ;(remove-ns 'reversi.core)
 
 (defmacro dbg[x] `(let [x# ~x] (println "dbg:" '~x "=" x#) x#))
@@ -119,22 +120,6 @@
         best-val (apply (if #(black? player) max min) tree2)]
     (nth subtrees (.indexOf tree2 best-val))))
 
-(defn parallel-ai-player-w-sort [heuristic-fn depth game-tree]
-  (let [[[board player] subtrees] game-tree
-        tree (if (black? player)
-               (max-mins (pmap #(minimise*
-                                 (highfirst
-                                  (map-tree heuristic-fn
-                                            (prune (dec depth) %))))
-                               subtrees))
-               (min-maxs (pmap #(maximise*
-                                 (lowfirst
-                                  (map-tree heuristic-fn
-                                            (prune (dec depth) %))))
-                               subtrees)))
-        best-val (apply (if #(black? player) max min) tree)]
-    (nth subtrees (.indexOf tree best-val))))
-
 (defn ai-player [heuristic depth game-tree]
   (let [[[board player] subtrees] game-tree
         counter (atom 0)
@@ -151,21 +136,21 @@
     (println "heuristic score: " best-val)
     (nth subtrees (.indexOf tree2 best-val))))
 
-(comment
-  (defn human-player [[[board player] subtrees]]
-    (println "You are " (if (= \b player) "black" "white"))
-    (println "Choose a move:")
-    (print-board
-     (apply assoc board (interleave
-                         (legal-positions [board player])
-                         (range))))
-    (loop [move (read-string (read-line))]
-      (if (< -1 move (count subtrees))
-        (nth subtrees move)
-        (do (println "Illegal move.")
-            (recur (read-string (read-line))))))))
+(defn human-player [[[board player] subtrees]]
+  (println "You are " (if (= \b player) "black" "white"))
+  (println "Choose a move:")
+  (print-board
+   (apply assoc board (interleave
+                       (legal-positions [board player])
+                       (range))))
+  (loop [move (read-string (read-line))]
+    (if (< -1 move (count subtrees))
+      (nth subtrees move)
+      (do (println "Illegal move.")
+          (recur (read-string (read-line)))))))
 
 
+;; #
 (defn game-over? [[val subtrees]]
   (let [[val2 subtrees2] (first subtrees)
         [val3 _]         (first subtrees2)]
