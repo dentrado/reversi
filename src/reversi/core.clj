@@ -156,22 +156,25 @@
         [val3 _]         (first subtrees2)]
     (= val val3)))
 
-(defn winner
-  "Returns the winner (b or w) or nil on tie."
+(defn score
+  "calculates the score (num black pieces - num white pieces)"
   [board]
-  (let [[blacks whites] (->> (sort (vals board))
-                             (partition-by identity)
-                             (map count))
-        [blacks whites] [(or blacks 0) (or whites 0)]]
-    (cond
-     (< blacks whites) \w
-     (> blacks whites) \b
-     :else nil))) ; tie
+  (naive [board nil]))
 
-(defn game [player1 player2 game-tree]
+(defn winner
+  "Returns the winner (\\b or \\w) or nil on tie."
+  [board]
+  (case (Integer/signum (score board))
+   -1 \w
+    1 \b
+    0 nil))
+
+(defn game
+  "Play a game between player1 and player2 starting from the root of the
+  game-tree. Returns the final score. A positive score means that
+  player1 won, a negative that player2 won."
+  [player1 player2 game-tree]
   (let [next-tree (player1 game-tree)]
     (if (game-over? next-tree)
-      (do
-        (println "The winner is" ({\b "black" \w "white"} (winner (ffirst next-tree))))
-        (ffirst next-tree))
+      (score (ffirst next-tree))
       (game player2 player1 next-tree))))
