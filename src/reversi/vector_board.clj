@@ -27,6 +27,10 @@
 (defn white? [player] (= player white))
 (defn empty? [player] (= player empty))
 
+(defn occupied?
+  "Returns true if the piece is black or white (not empty or outer)."
+  [piece] (or (black? piece) (white? piece)))
+
 (def opponent [0 2 1])
 
 (defn neighbours
@@ -105,9 +109,7 @@
     [board player]))
 
 (defn occupied-positions [board]
-  (remove nil? (map-indexed (fn [idx val]
-                              (when (or (white? val) (black? val))
-                                idx))
+  (remove nil? (map-indexed (fn [idx val] (when (occupied? val) idx))
                             board)))
 
 (defn move->str [[prev-board p1] [board _]]
