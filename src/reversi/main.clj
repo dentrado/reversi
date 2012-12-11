@@ -19,9 +19,9 @@ O for white or X for black.
 (defn -main [move-str time-limit & args]
   (if-not (and move-str time-limit (zero? (count args)))
     (usage)
-    (let [move (str->move move-str)
-          next-move (first (ai-player-w-sort heur/position 7 (game-tree move)))]
-      (println (move->str move next-move)))))
+    (let [move (b/str->move move-str)
+          next-move (first (ai-player-w-sort heur/stability-heur 7 (game-tree move)))]
+      (println (b/move->str move next-move)))))
 
 ;;"WEEEEEEEEEEEEEEEEEEEEEEEEEEEOXEEEEEEXOEEEEEEEEEEEEEEEEEEEEEEEEEEE"
 
