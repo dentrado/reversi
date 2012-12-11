@@ -1,5 +1,6 @@
 (ns reversi.vector-board
   "Functions for manipulating boards and generating moves."
+  (:refer-clojure :rename {empty core-empty, empty? core-empty?})
   (:use [clojure.set :only [union intersection difference]]))
 
 (def board-size 8)
@@ -21,8 +22,11 @@
    3 0 0 0 0 0 0 0 0 3
    3 3 3 3 3 3 3 3 3 3])
 
+(defn outer? [player] (= player outer))
 (defn black? [player] (= player black))
 (defn white? [player] (= player white))
+(defn empty? [player] (= player empty))
+
 (defn occupied? [pos] (or (= pos black) (= pos white)))
 
 (def opponent [0 2 1])
@@ -57,7 +61,7 @@
     (let [directions (map #(- % pos) (neighbours board pos))
           flipped-pieces (apply union (map #(flip board player pos %)
                                            directions))]
-      (when-not (= #{} flipped-pieces) ; faster than "empty?"
+      (when-not (= #{} flipped-pieces) ; faster than core-empty?
         (apply assoc board pos player
                (interleave flipped-pieces (repeat player)))))))
 
@@ -71,7 +75,7 @@
                   :let [mv (move board player (+ x (* 10 y)))]
                   :when mv]
               [mv (opponent player)])]
-    (if (empty? mvs)
+    (if (core-empty? mvs)
       (list [board (opponent player)])
       mvs)))
 
