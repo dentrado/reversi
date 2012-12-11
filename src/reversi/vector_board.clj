@@ -73,7 +73,7 @@
               [mv (opponent player)])]
     (if (empty? mvs)
       (list [board (opponent player)])
-      mvs)))'
+      mvs)))
 
 (defn legal-positions
   "returns all legal positions for the given player and board"
