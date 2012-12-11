@@ -27,8 +27,6 @@
 (defn white? [player] (= player white))
 (defn empty? [player] (= player empty))
 
-(defn occupied? [pos] (or (= pos black) (= pos white)))
-
 (def opponent [0 2 1])
 
 (defn neighbours
@@ -106,10 +104,17 @@
                            (repeat 11 outer)))]
     [board player]))
 
-(comment "NOT WORKING:"
-  (defn move->str [[prev-board p1] [board _]]
-    (let [[[x y]] (seq (intersection (set (legal-positions [prev-board p1]))
-                                     (difference (set (keys board)) (set (keys prev-board)))))]
-      (if (nil? x)
-        "pass"
-        (str "(" (inc y) "," (inc x) ")")))))
+(defn occupied-positions [board]
+  (remove nil? (map-indexed (fn [idx val]
+                              (when (or (white? val) (black? val))
+                                idx))
+                            board)))
+
+(defn move->str [[prev-board p1] [board _]]
+  (let [[pos] (seq (intersection
+                    (set (legal-positions [prev-board p1]))
+                    (difference (set (occupied-positions board))
+                                (set (occupied-positions prev-board)))))]
+    (if (nil? pos)
+      "pass"
+      (str "(" (quot pos 10) "," (rem pos 10) ")"))))
