@@ -1,4 +1,4 @@
-(ns reversi.vector-board
+(ns reversi.board
   "Functions for manipulating boards and generating moves."
   (:refer-clojure :rename {empty core-empty, empty? core-empty?})
   (:use [clojure.set :only [union intersection difference]]))
@@ -43,7 +43,7 @@
 
 (defn flip
   "Tries to flip pieces from (not including) pos in the given direction
-   until a piece of the players color appears. dir is on the form [x y],
+   until a piece of the players color appears. dir is on the form yx,
    i.e. 10 means east, 01 south, -11 southwest and so on.
    Returns the set of flipped pieces (nil if no pieces can be flipped)."
   [board player pos dir]

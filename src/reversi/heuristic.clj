@@ -1,6 +1,6 @@
-(ns reversi.vector-board.heuristic
+(ns reversi.heuristic
   (:use [clojure.math.combinatorics :only [selections]])
-  (:require [reversi.vector-board :as b]))
+  (:require [reversi.board :as b]))
 
 (defn random [_] (rand-int 100))
 
@@ -90,6 +90,7 @@
 
 (def top-edge (first edges))
 
+
 (defn edge-pos-stability
   "Calculates the positions stability on the given board. The position
   must be on the top edge of the board, or one of the top x-squares
@@ -98,9 +99,8 @@
   [board pos]
   (let [stable 0, semi-stable 1, unstable 2]
     (cond (corner? pos) stable
-          (x-square? pos) (if
-                              (b/empty?
-                               (adjacent-corner pos))
+          (x-square? pos) (if (b/empty? (board
+                                         (adjacent-corner pos)))
                             unstable
                             semi-stable)
           :else
@@ -130,32 +130,32 @@
               top-edge
               edge-position-weights)))
 
-(defn stability-heur [[board _]]
-  (edge-stability board b/black))
-
-(defn init-edge-stability-map [initial-board edge-positions]
+(defn init-edge-stability-map []
   (let [possible-edge-vals (selections [b/empty b/black b/white] 10)]
     (into {}
      (for [edge-vals possible-edge-vals]
-       (let [edge-board (apply assoc initial-board
-                               (interleave edge-positions
+       (let [edge-board (apply assoc b/initial-board
+                               (interleave top-edge
                                            edge-vals))
-             stability-list (map #(edge-pos-stability
-                                   initial-board %)
-                                 edge-positions)
-             weighted-list (map #(%1 %2)
-                                 edge-position-weights
-                                 stability-list)
-             weighted-board (apply assoc b/initial-board
-                                   (interleave edge-positions
-                                               weighted-list))]
-         [edge-board weighted-board])))))
+             stability-board (edge-stability edge-board b/black)]
+         [edge-vals stability-board])))))
 
-(def edge-stability-map (init-edge-stability-map b/initial-board
-                                                 top-edge))
+(def edge-stability-map
+  "TODO: bad name change it"
+  (init-edge-stability-map))
+
+(defn stability-heur [[board _]]
+  (apply +
+         (for [edge edges]
+           (edge-stability-map (map board edge)))))
 
 (comment
- (edge-stability (assoc b/initial-board  11 b/black 12 b/black)  b/black)
+  (edge-stability-map (map (assoc  b/initial-board 11 b/white) top-edge))
+  (stability-heur  [(assoc  b/initial-board 22 b/white) b/black])
+
+(count edge-stability-map)
+
+  (edge-stability (assoc b/initial-board  11 b/black 12 b/black)  b/black)
  (edge-pos-stability (assoc b/initial-board  11 b/black 12 b/black)
                      12)
 
