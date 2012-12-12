@@ -1,4 +1,5 @@
 (ns reversi.core
+  "Functions for tying things togheter and playing games"
   (:use [reversi.search :only [maxi mini maximise* minimise*
                                highfirst lowfirst]]
         [reversi.board :only [moves black? legal-positions print-board]]

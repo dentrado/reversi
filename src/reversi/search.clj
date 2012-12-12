@@ -1,4 +1,5 @@
-(ns reversi.search)
+(ns reversi.search
+  "Functions performing Minimax and Alpha-Beta search")
 
 ;; # Minimax
 (declare mini)

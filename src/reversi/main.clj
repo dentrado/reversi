@@ -1,4 +1,5 @@
 (ns reversi.main
+  "Program entry point"
   (:use reversi.core)
   (:require [reversi.board :as b]
             [reversi.heuristic :as heur])
