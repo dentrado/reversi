@@ -1,10 +1,8 @@
 (ns reversi.main
   (:use reversi.core)
-  (:require [reversi.vector-board :as b]
-            [reversi.vector-board.heuristic :as heur])
+  (:require [reversi.board :as b]
+            [reversi.heuristic :as heur])
   (:gen-class))
-
-;;(remove-ns 'reversi.main)
 
 (defn usage []
   (println
@@ -19,11 +17,11 @@ O for white or X for black.
 (defn -main [move-str time-limit & args]
   (if-not (and move-str time-limit (zero? (count args)))
     (usage)
-    (let [move (b/str->move move-str)
-          next-move (first (ai-player-w-sort heur/stability-heur 7 (game-tree move)))]
+    (let [depth (condp > (Integer/parseInt time-limit)
+                  3  5,
+                  10 6,
+                  60 7,
+                  8)
+          move (b/str->move move-str)
+          next-move (first (ai-player-w-sort heur/stability-heur depth (game-tree move)))]
       (println (b/move->str move next-move)))))
-
-;;"WEEEEEEEEEEEEEEEEEEEEEEEEEEEOXEEEEEEXOEEEEEEEEEEEEEEEEEEEEEEEEEEE"
-
-;;"EEEEEEEEEEEEEEEEEEEEEEEEEEEOOOEEEEEXOOEEEOOOXOEEEEEEEEEEEEEEEEEE"
-;;"EEEEEEEEEEEEEEEEEEEEEEEEEEEOOOEEEEEXOOEEEOOOXOEEEEEEEEEEEEEEEEEE"
