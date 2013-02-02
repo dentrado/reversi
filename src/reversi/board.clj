@@ -92,7 +92,7 @@
     pos))
 
 (defn print-board [board]
-  (let [display-piece ["." "●" "○" "█"]]
+  (let [display-piece #({empty ".", outer "█", black "●", white "○"} % %)]
     (doseq [row (partition 10 board)]
       (apply println (map display-piece row)))))
 

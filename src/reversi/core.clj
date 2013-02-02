@@ -71,7 +71,8 @@
   (print-board
    (apply assoc board (interleave
                        (legal-positions [board player])
-                       (range))))
+                       ;; pieces are ints, so use strs for moves to avoid clash:
+                       (map str (range)))))
   (loop [move (read-string (read-line))]
     (if (< -1 move (count subtrees))
       (nth subtrees move)
