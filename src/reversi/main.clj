@@ -24,5 +24,6 @@ O for white or X for black.
                   60 7,
                   8)
           move (b/str->move move-str)
-          next-move (first (ai-player-w-sort heur/stability-heur depth (game-tree move)))]
+          next-move (first (ai-player-w-sort heur/stability-heur depth
+                                             (game-tree move)))]
       (println (b/move->str move next-move)))))
