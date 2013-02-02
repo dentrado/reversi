@@ -17,7 +17,7 @@ FIXME
 
 Complete the stability-heuristic, at the moment only parts of the algorithm in
 PAIP is implemented and it's only slightly better than the naive
-(color counting) heuristic.
+(color counting) heuristic. 
 
 ## License
 
